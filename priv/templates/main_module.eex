@@ -1,0 +1,19 @@
+defmodule Aoc.Year<%= year %>.Day<%= day %>.<%= title %> do
+  @moduledoc """
+<%= module_documentation %>
+  """
+
+  @doc """
+
+  """
+  def part_1(input) do
+    input
+  end
+
+  @doc """
+
+  """
+  def part_2(input) do
+    input
+  end
+end

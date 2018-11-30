@@ -1,0 +1,28 @@
+defmodule Aoc.Year<%= year %>.Day<%= day %>.<%= title %>Test do
+  use Aoc.DayCase
+  doctest Aoc.Year<%= year %>.Day<%= day %>.<%= title %>, import: true
+
+  alias Aoc.Year<%= year %>.Day<%= day %>.<%= title %>
+
+  describe "part_1/1" do
+    test "examples" do
+
+    end
+
+    @tag day: <%= day %>, year: <%= year %>
+    test "input", %{input: input} do
+      assert input |> <%= title %>.part_1() == input
+    end
+  end
+
+  describe "part_2/1" do
+    test "examples" do
+
+    end
+
+    @tag day: <%= day %>, year: <%= year %>
+    test "input", %{input: input} do
+      assert input |> <%= title %>.part_2() == input
+    end
+  end
+end
