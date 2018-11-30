@@ -20,8 +20,8 @@ Running `mix aoc.gen 1` (at the start of the 2018 advent of code) will:
 ## Installation
 
 * Fork this repo
-* Grab your session key from [Advent Of Code](https://adventofcode.com) and set
-  it as an environment variable.
+* Grab your browser's session key from [Advent Of Code](https://adventofcode.com) and set
+  it as an environment variable. (Chrome Developer Tools > Application > Cookies > session)
 
 ## Using this Skeleton
 
