@@ -11,14 +11,34 @@ defmodule Aoc.DayGenerator do
     |> generate_input()
   end
 
-  @continue "Files exist for this problem.  Do you want to overwrite them?"
-
   defp check_if_already_exists({day, year, body}) do
     with false <- folder_exists?(day, year) do
       Mix.shell().info("No files exist yet of Day #{day} of Year #{year}")
       {day, year, body}
     else
-      true ->
+      true -> handle_files_exist({day, year, body})
+    end
+  end
+
+  @continue "Files exist for this problem.  Do you want to overwrite them?"
+
+  def handle_files_exist({day, year, body} = args) do
+    with false <- day_contains_part_two?(args),
+         true <- body_contains_part_two?(body) do
+      Mix.shell().info("Adding part two to the docs")
+
+      part_2 = part_2_docs_from_body(body)
+
+      new_body =
+        args
+        |> read_day_file()
+        |> find_and_append_moduledocs(part_2)
+
+      write_day_file(args, new_body)
+
+      false
+    else
+      _ ->
         case Mix.shell().yes?(@continue) do
           true -> {day, year, body}
           false -> false
@@ -26,9 +46,34 @@ defmodule Aoc.DayGenerator do
     end
   end
 
-  defp generate_day_file({day, year, body}) do
+  defp read_day_file({day, year, body}) do
     title = title_from_body(body)
     file_name = title |> String.replace(" ", "_") |> String.downcase()
+
+    "#{file_folder(day, year)}/#{file_name}.ex"
+    |> File.read!()
+  end
+
+  defp write_day_file({day, year, body}, content) do
+    title = title_from_body(body)
+    file_name = title |> String.replace(" ", "_") |> String.downcase()
+    File.write!("#{file_folder(day, year)}/#{file_name}.ex", content)
+  end
+
+  defp day_contains_part_two?(args) do
+    args
+    |> read_day_file()
+    |> String.contains?("## --- Part Two ---")
+  end
+
+  defp body_contains_part_two?(body) do
+    body
+    |> Floki.find(".day-desc #part2")
+    |> Enum.any?()
+  end
+
+  defp generate_day_file({day, year, body}) do
+    title = title_from_body(body)
     module_name = title |> String.replace(" ", "") |> String.trim()
 
     content =
@@ -40,7 +85,7 @@ defmodule Aoc.DayGenerator do
       )
 
     File.mkdir_p(file_folder(day, year))
-    File.write!("#{file_folder(day, year)}/#{file_name}.ex", content)
+    write_day_file({day, year, body}, content)
     Mix.shell().info("Created Main Module")
     {day, year, body}
   end
@@ -120,6 +165,16 @@ defmodule Aoc.DayGenerator do
   def module_docs_from_body(body) do
     body
     |> Floki.find("article")
+    |> document_to_markdown()
+  end
+
+  def part_2_docs_from_body(body) do
+    [_part_1, part_2] = Floki.find(body, "article")
+    document_to_markdown([part_2])
+  end
+
+  defp document_to_markdown(doc) do
+    doc
     |> Enum.map(&to_markdown/1)
     |> Enum.join("\n")
     |> String.replace("\n", "\n  ")
@@ -153,5 +208,13 @@ defmodule Aoc.DayGenerator do
 
     "https://adventofcode.com/#{year}/day/#{day}/input"
     |> HTTPoison.get!(%{}, hackney: [cookie: ["session=#{session_cookie}"]])
+  end
+
+  def find_and_append_moduledocs(body, docs) do
+    [{first, _length} | _] = Regex.run(~r/  """\n/, body, return: :index)
+
+    {part_1, part_2} = String.split_at(body, first-8)
+
+    part_1 <> "\n"<> String.slice(docs, 0..-3) <> part_2
   end
 end

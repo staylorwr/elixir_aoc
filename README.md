@@ -26,6 +26,6 @@ Running `mix aoc.gen 1` (at the start of the 2018 advent of code) will:
 ## Using this Skeleton
 
 * Run `mix aoc.gen 1` to generate your content for the first day
-* Read the new module's docs, solve the problem with TDD :smile:.
+* Read the new module's docs, solve the first part of the problem with TDD :smile:.
+* Run `mix aoc.gen 1` again to append the second part of the problem to your moduledocs.
 * Get all the stars.
-
