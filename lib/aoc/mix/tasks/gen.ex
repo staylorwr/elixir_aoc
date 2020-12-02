@@ -32,25 +32,18 @@ defmodule Mix.Tasks.Aoc.Gen do
   end
 
   defp generate(day, year: year) do
-    case get_day(day, year) do
-      %HTTPoison.Response{status_code: 200, body: body} ->
+    case Aoc.Site.get_day(year, day) do
+      {:ok, %{status: 200, body: body}} ->
         Aoc.DayGenerator.generate(day, year, body)
 
-      %HTTPoison.Response{status_code: code, body: body} ->
-        Mix.raise("HTTP Error #{code}: #{body}")
+      {:ok, %{status: status, body: body}} ->
+        Mix.raise("HTTP Error #{status}: #{body}")
     end
   end
 
   defp generate(day, []) do
     year = Date.utc_today() |> Map.get(:year) |> Integer.to_string()
     generate(day, year: year)
-  end
-
-  defp get_day(day, year) do
-    session_cookie = Application.get_env(:aoc, :key)
-
-    "https://adventofcode.com/#{year}/day/#{day}"
-    |> HTTPoison.get!(%{}, hackney: [cookie: ["session=#{session_cookie}"]])
   end
 
   defp parse_opts(argv) do

@@ -114,7 +114,7 @@ defmodule Aoc.DayGenerator do
 
   defp generate_input({day, year, _body}) do
     case get_input(day, year) do
-      %HTTPoison.Response{status_code: 200, body: body} ->
+      %{status: 200, body: body} ->
         File.mkdir_p(input_file_folder(year))
 
         File.write!(
@@ -124,7 +124,7 @@ defmodule Aoc.DayGenerator do
 
         Mix.shell().info("Created Input File")
 
-      %HTTPoison.Response{status_code: code, body: body} ->
+      %{status: code, body: body} ->
         Mix.raise("Test Input HTTP Error #{code}: #{body}")
     end
   end
@@ -153,6 +153,8 @@ defmodule Aoc.DayGenerator do
   @prepend_title_pattern ~r/--- Day \d+:/
 
   def title_from_body(body) do
+    {:ok, body} = Floki.parse_document(body)
+
     body
     |> Floki.find("article h2")
     |> List.first()
@@ -163,12 +165,16 @@ defmodule Aoc.DayGenerator do
   end
 
   def module_docs_from_body(body) do
+    {:ok, body} = Floki.parse_document(body)
+
     body
     |> Floki.find("article")
     |> document_to_markdown()
   end
 
   def part_2_docs_from_body(body) do
+    {:ok, body} = Floki.parse_document(body)
+
     [_part_1, part_2] = Floki.find(body, "article")
     document_to_markdown([part_2])
   end
@@ -204,17 +210,15 @@ defmodule Aoc.DayGenerator do
   end
 
   defp get_input(day, year) do
-    session_cookie = Application.get_env(:aoc, :key)
-
-    "https://adventofcode.com/#{year}/day/#{day}/input"
-    |> HTTPoison.get!(%{}, hackney: [cookie: ["session=#{session_cookie}"]])
+    {:ok, resp} = Aoc.Site.get_input(year, day)
+    resp
   end
 
   def find_and_append_moduledocs(body, docs) do
     [{first, _length} | _] = Regex.run(~r/  """\n/, body, return: :index)
 
-    {part_1, part_2} = String.split_at(body, first-8)
+    {part_1, part_2} = String.split_at(body, first - 8)
 
-    part_1 <> "\n"<> String.slice(docs, 0..-3) <> part_2
+    part_1 <> "\n" <> String.slice(docs, 0..-3) <> part_2
   end
 end
