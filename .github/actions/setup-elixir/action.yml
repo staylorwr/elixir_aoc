@@ -46,10 +46,6 @@ inputs:
     type: string
     default: 'v1'
     description: If you need to reset the cache for some reason, you can change this key.
-  teal-secret-key:
-    required: true
-    type: string
-    description: "Hex.pm Auth Key for using ExTeal"
 runs:
   using: "composite"
   steps:
