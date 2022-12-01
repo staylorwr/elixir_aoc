@@ -1,0 +1,28 @@
+name: Elixir Quality Checks
+on: push
+
+jobs:
+  test:
+    name: Elixir Tests
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        elixir: ["1.14.1"]
+        otp: ["25.1.2"]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Setup Elixir Project
+        uses: ./.github/actions/setup-elixir
+        with:
+          elixir-version: ${{ matrix.elixir }}
+          otp-version: ${{ matrix.otp }}
+          build-app: true
+      - name: Run Tests
+        run: mix test --warnings-as-errors
+        if: always()
+      - name: Check code formatting
+        run: mix format --check-formatted
+        if: always()
